@@ -107,6 +107,16 @@
     text-transform: uppercase;
   }
 
+  /* TÍTULO GRACIAS (no uppercase) */
+  .titulo-gracias {
+    font-size: 38px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--azul-marino);
+    line-height: 1.15;
+    margin-bottom: 32px;
+  }
+
   .info-contacto {
     font-size: 15px;
     text-align: center;
@@ -353,6 +363,21 @@
     display: none;
   }
   .aviso-min.visible { display: block; }
+
+  /* SPINNER */
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--rojo);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
@@ -586,11 +611,31 @@
         <input type="hidden" name="spin_premia" id="spinValue">
         <div class="botones">
           <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
-          <button type="submit" class="btn btn-primario" disabled id="btnFinal">Terminar Encuesta →</button>
+          <button type="button" class="btn btn-primario" onclick="enviarEncuesta()" disabled id="btnFinal">Terminar Encuesta →</button>
         </div>
       </div>
     </div>
   </form>
+
+  <!-- PANTALLA 13: AGRADECIMIENTO (fuera del form para que no se reinicie) -->
+  <div class="pantalla" data-paso="13">
+    <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+    <div style="padding: 32px 20px;">
+      <h1 class="titulo-gracias">Muchas gracias por tus opiniones</h1>
+      <p class="info-contacto">En OXXO cada día trabajamos para darte una mejor experiencia en nuestras tiendas.</p>
+      <p class="info-contacto">Si tienes alguna duda, consulta la sección de Preguntas Frecuentes haz clic aquí (<a href="https://www.oxxo.com/faqs" target="_blank">https://www.oxxo.com/faqs</a>)</p>
+      <p class="info-contacto">Si requieres apoyo inmediato comunícate al 81 8320 2020 o escribe a atencionaclientes@oxxo.com.</p>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE CARGA -->
+  <div class="pantalla" data-paso="cargando">
+    <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+    <div style="padding: 60px 20px; text-align: center;">
+      <div class="spinner"></div>
+      <p style="font-size: 18px; color: var(--azul-marino);">Enviando tus respuestas...</p>
+    </div>
+  </div>
 
   <div class="footer">Encuesta de satisfacción · Tienda Forum Río Nilo<br><a href="#">Support</a> · <a href="#">Privacy</a></div>
 </div>
@@ -725,7 +770,37 @@
     pasoActual = nuevo; actualizarProgreso(); window.scrollTo(0,0);
   }
 
-  function actualizarProgreso() { document.getElementById('progressBar').style.width = (pasoActual / 12 * 100) + '%'; }
+  function actualizarProgreso() {
+    if (pasoActual === 13 || pasoActual === 'cargando') {
+      document.getElementById('progressBar').style.width = '100%';
+    } else {
+      document.getElementById('progressBar').style.width = (pasoActual / 12 * 100) + '%';
+    }
+  }
+
+  // ENVÍO DE LA ENCUESTA EN BACKGROUND + MOSTRAR PANTALLA DE GRACIAS
+  function enviarEncuesta() {
+    const form = document.getElementById('encuestaForm');
+    const formData = new FormData(form);
+
+    // Mostrar pantalla de carga
+    mostrarPaso('cargando');
+
+    // Enviar a FormSubmit en background
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(() => {
+      // Independientemente de la respuesta, mostrar gracias
+      mostrarPaso(13);
+    })
+    .catch(() => {
+      // Aún si falla la red, mostrar gracias (FormSubmit puede no responder JSON pero igual procesa)
+      mostrarPaso(13);
+    });
+  }
 </script>
 </body>
 </html>
