@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta de Satisfacción</title>
+<style>
+  :root {
+    --rojo: #E10915;
+    --rojo-oscuro: #B30710;
+    --amarillo: #FFD100;
+    --azul-marino: #1A2B3C;
+    --gris-fondo: #FFFFFF;
+    --gris-claro: #F8F8F8;
+    --gris-borde: #E0E0E0;
+    --gris-texto: #2C3E50;
+    --gris-suave: #8898A8;
+    --link: #2196F3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: white;
+    color: var(--azul-marino);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    background: #EEE;
+    height: 6px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .progress-bar {
+    background: var(--amarillo);
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* SELECTOR IDIOMA */
+  .idioma-wrap {
+    padding: 16px 20px 0;
+  }
+  .idioma-select {
+    background: #F0F0F0;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 32px 8px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--azul-marino);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231A2B3C' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  /* HEADER LOGO */
+  .marca-header {
+    text-align: center;
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+  .marca-logo-img {
+    height: 60px;
+    width: auto;
+  }
+
+  /* PANTALLAS */
+  .pantalla {
+    display: none;
+    padding: 24px 20px;
+    animation: fadeIn 0.35s ease;
+  }
+  .pantalla.activa { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TÍTULO BIENVENIDA */
+  .titulo-bienvenida {
+    font-size: 32px;
+    font-weight: 900;
+    text-align: center;
+    color: var(--azul-marino);
+    line-height: 1.15;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+
+  .info-contacto {
+    font-size: 15px;
+    text-align: center;
+    color: var(--azul-marino);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .info-contacto a {
+    color: var(--link);
+    word-break: break-all;
+  }
+
+  .obligatoria {
+    color: var(--gris-suave);
+    font-size: 14px;
+    margin-bottom: 12px;
+    margin-top: 24px;
+  }
+  .obligatoria::before {
+    content: "→ ";
+    color: var(--gris-suave);
+    margin-right: 4px;
+  }
+
+  .pregunta {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--azul-marino);
+    margin-bottom: 20px;
+    line-height: 1.3;
+  }
+
+  .pregunta-pequena {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--azul-marino);
+    margin: 20px 0 10px;
+    line-height: 1.35;
+  }
+
+  .seccion-titulo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--azul-marino);
+    text-transform: uppercase;
+    margin: 32px 0 16px;
+    letter-spacing: 0.5px;
+  }
+
+  /* NPS 0-10 */
+  .nps-labels-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--azul-marino);
+    margin-bottom: 8px;
+  }
+  .nps-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 1px;
+    background: var(--gris-borde);
+    border: 1px solid var(--gris-borde);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .nps-btn {
+    aspect-ratio: 1;
+    border: none;
+    background: white;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--azul-marino);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nps-btn:hover { background: #F8F8F8; }
+  .nps-btn.seleccionado {
+    background: var(--amarillo);
+    font-weight: 700;
+  }
+
+  /* OPCIONES */
+  .opciones {
+    border: 1px solid var(--gris-borde);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .opcion {
+    background: white;
+    border-bottom: 1px solid var(--gris-borde);
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-size: 16px;
+    color: var(--azul-marino);
+    line-height: 1.4;
+  }
+  .opcion:last-child { border-bottom: none; }
+  .opcion:hover { background: #FAFAFA; }
+  .opcion .check {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid #B0B0B0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .opcion.seleccionada .check {
+    border-color: var(--amarillo);
+    background: white;
+  }
+  .opcion.seleccionada .check::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    background: var(--amarillo);
+    border-radius: 50%;
+  }
+  .opcion.multi .check { border-radius: 4px; }
+  .opcion.multi.seleccionada .check::after {
+    width: 0;
+    height: 0;
+    background: transparent;
+    content: "✓";
+    color: var(--azul-marino);
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  /* INPUTS */
+  .input-grupo { margin-bottom: 24px; }
+  .input-grupo label {
+    display: block;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--azul-marino);
+    margin-bottom: 12px;
+  }
+  .input-grupo input,
+  .input-grupo textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--gris-borde);
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: inherit;
+    background: white;
+    color: var(--azul-marino);
+    transition: border 0.2s;
+  }
+  .input-grupo input:focus,
+  .input-grupo textarea:focus {
+    outline: none;
+    border-color: var(--amarillo);
+    box-shadow: 0 0 0 2px rgba(255, 209, 0, 0.2);
+  }
+  .input-grupo textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+
+  /* BOTONES */
+  .botones {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .btn {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primario {
+    background: var(--rojo);
+    color: white;
+  }
+  .btn-primario:hover { background: var(--rojo-oscuro); }
+  .btn-primario:disabled {
+    background: #CCC;
+    cursor: not-allowed;
+  }
+  .btn-secundario {
+    background: #E8E8E8;
+    color: var(--azul-marino);
+  }
+  .btn-secundario:hover { background: #D8D8D8; }
+
+  .btn-comenzar {
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 24px 20px;
+    border-top: 1px solid var(--gris-borde);
+    margin-top: 40px;
+    font-size: 12px;
+    color: var(--gris-suave);
+  }
+  .footer a { color: var(--gris-suave); text-decoration: underline; margin: 0 6px; }
+
+  .aviso-privacidad {
+    font-size: 13px;
+    color: var(--gris-texto);
+    line-height: 1.5;
+    text-align: center;
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--gris-claro);
+    border-radius: 4px;
+  }
+  .aviso-privacidad a { color: var(--link); word-break: break-all; }
+
+  .aviso-min {
+    font-size: 13px;
+    color: var(--rojo);
+    margin-top: 8px;
+    display: none;
+  }
+  .aviso-min.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <form id="encuestaForm" action="https://formsubmit.co/igeratm@gmail.com" method="POST">
+    <input type="hidden" name="_subject" value="Nueva encuesta - Tienda Forum Río Nilo">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="distrito" id="distrito" value="">
+    <input type="hidden" name="folio" id="folio" value="">
+    <input type="hidden" name="fecha_hora" id="fechaHora" value="">
+
+    <!-- PANTALLA 1 -->
+    <div class="pantalla activa" data-paso="1">
+      <div class="idioma-wrap">
+        <select class="idioma-select">
+          <option>Spanish (Mexico)</option>
+          <option>English (US)</option>
+        </select>
+      </div>
+      <div class="marca-header">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img">
+      </div>
+      <div style="padding: 24px 20px;">
+        <h1 class="titulo-bienvenida">¡Ha sido un gusto atenderte en tu compra!</h1>
+        <p class="info-contacto">Si tienes alguna duda, consulta la sección de Preguntas Frecuentes haz clic aquí (<a href="https://www.oxxo.com/faqs" target="_blank">https://www.oxxo.com/faqs</a>)</p>
+        <p class="info-contacto">Si requieres apoyo inmediato comunícate al 81 8320 2020 o escribe a atencionaclientes@oxxo.com.</p>
+        <p class="obligatoria">Obligatoria</p>
+        <p class="pregunta">¿Qué tan probable es que recomiendes a familiares o amigos realizar compras en la tienda OXXO que visitaste?</p>
+        <div class="nps-labels-top"><span>Nada Probable</span><span>Muy Probable</span></div>
+        <div class="nps-grid" id="npsGrid"></div>
+        <input type="hidden" name="nps" id="npsValue">
+        <button type="button" class="btn btn-primario btn-comenzar" onclick="siguiente()" disabled id="btnComenzar">Comenzar Encuesta →</button>
+      </div>
+    </div>
+
+    <!-- PANTALLA 2 -->
+    <div class="pantalla" data-paso="2">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="pregunta">Por favor dinos, ¿qué es lo que más valoras de OXXO de acuerdo con tu última visita?</p>
+        <div class="input-grupo"><textarea name="que_valoras"></textarea></div>
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguiente()">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 3 -->
+    <div class="pantalla" data-paso="3">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="obligatoria">Obligatoria</p>
+        <p class="pregunta">¿Cuál fue la principal razón por la que nos visitaste el día de hoy?</p>
+        <div class="opciones" data-grupo="razon">
+          <div class="opcion" data-valor="Cuidado personal y del hogar"><span class="check"></span><span><strong>Cuidado personal y del hogar</strong> - Compras cotidianas de productos...</span></div>
+          <div class="opcion" data-valor="Comidas del hogar y mascotas"><span class="check"></span><span><strong>Comidas del hogar y mascotas</strong> - Preparar comidas diarias...</span></div>
+          <div class="opcion" data-valor="Snacking"><span class="check"></span><span><strong>Snacking</strong> - Calmar un antojo...</span></div>
+          <div class="opcion" data-valor="Comida practica y Cafe"><span class="check"></span><span><strong>Comida práctica y Café</strong> - Algo rápido fuera de casa...</span></div>
+          <div class="opcion" data-valor="Bebidas y celebracion"><span class="check"></span><span><strong>Bebidas y celebración</strong> - Reunión o fiesta...</span></div>
+          <div class="opcion" data-valor="Servicios"><span class="check"></span><span><strong>Servicios</strong> - Pago de servicios, recargas...</span></div>
+          <div class="opcion" data-valor="Otro"><span class="check"></span><span><strong>Otro</strong></span></div>
+        </div>
+        <input type="hidden" name="razon_visita" id="razonValue">
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguiente()" disabled id="btn3">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 4 -->
+    <div class="pantalla" data-paso="4">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="obligatoria">Obligatoria</p>
+        <p class="pregunta">Nos encanta escuchar tu opinión, ¿nos regalarías algunos minutos para contestar algunas preguntas adicionales?</p>
+        <div class="opciones" data-grupo="continuar">
+          <div class="opcion" data-valor="Si"><span class="check"></span><span>Sí, me gustaría ayudar a OXXO...</span></div>
+          <div class="opcion" data-valor="No"><span class="check"></span><span>No, tal vez en otra ocasión</span></div>
+        </div>
+        <input type="hidden" name="continuar" id="continuarValue">
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguienteCondicional()" disabled id="btn4">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 5 -->
+    <div class="pantalla" data-paso="5">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="obligatoria">Obligatoria</p>
+        <p class="pregunta">Por favor elige al menos 2 de los siguientes aspectos a evaluar:</p>
+        <div class="opciones" data-grupo="aspectos" data-multi="true">
+          <div class="opcion multi" data-valor="caracteristicas"><span class="check"></span><span>Características de la tienda</span></div>
+          <div class="opcion multi" data-valor="atencion"><span class="check"></span><span>Atención y servicio</span></div>
+          <div class="opcion multi" data-valor="proceso"><span class="check"></span><span>Proceso de compra</span></div>
+          <div class="opcion multi" data-valor="ambiente"><span class="check"></span><span>Ambiente dentro de la tienda</span></div>
+          <div class="opcion multi" data-valor="variedad"><span class="check"></span><span>Variedad</span></div>
+        </div>
+        <input type="hidden" name="aspectos" id="aspectosValue">
+        <p class="aviso-min" id="avisoMin">Selecciona al menos 2 opciones</p>
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguiente()" disabled id="btn5">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 6 -->
+    <div class="pantalla" data-paso="6">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <div class="bloque-aspecto" data-aspecto="caracteristicas" style="display:none;">
+          <h2 class="seccion-titulo">CARACTERÍSTICAS DE LA TIENDA</h2>
+          <div class="scale-block"><p class="pregunta-pequena">Diseño y amplitud de pasillos</p><div class="nps-grid scale-mini" data-name="car_diseno"></div></div>
+          <div class="scale-block"><p class="pregunta-pequena">Condiciones (limpieza, olor, temp)</p><div class="nps-grid scale-mini" data-name="car_condiciones"></div></div>
+        </div>
+        <div class="bloque-aspecto" data-aspecto="atencion" style="display:none;">
+          <h2 class="seccion-titulo">ATENCIÓN Y SERVICIO</h2>
+          <div class="scale-block"><p class="pregunta-pequena">Trato y actitud de empleados</p><div class="nps-grid scale-mini" data-name="at_trato"></div></div>
+        </div>
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguiente()" disabled id="btn6">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 7 -->
+    <div class="pantalla" data-paso="7">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="pregunta">¿Cómo percibes los precios de OXXO?</p>
+        <div class="opciones" data-grupo="precios">
+          <div class="opcion" data-valor="Muy caros"><span class="check"></span><span>Muy caros</span></div>
+          <div class="opcion" data-valor="Caros"><span class="check"></span><span>Caros</span></div>
+          <div class="opcion" data-valor="Justos"><span class="check"></span><span>Justos</span></div>
+          <div class="opcion" data-valor="Bajos"><span class="check"></span><span>Bajos</span></div>
+        </div>
+        <input type="hidden" name="precios" id="preciosValue">
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguienteCondicional()" disabled id="btn7">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 8 -->
+    <div class="pantalla" data-paso="8">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="pregunta">¿En qué productos los precios son más caros?</p>
+        <div class="input-grupo"><textarea name="productos_caros"></textarea></div>
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguiente()">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 9 -->
+    <div class="pantalla" data-paso="9">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="obligatoria">Obligatoria</p>
+        <p class="pregunta">¿Con cuál descripción te identificas más?</p>
+        <div class="opciones" data-grupo="perfil">
+          <div class="opcion" data-valor="Trabajo en calle"><span class="check"></span><span>Trabajo en calle / fábrica...</span></div>
+          <div class="opcion" data-valor="Jefe de familia"><span class="check"></span><span>Jefe de familia / Oficina...</span></div>
+          <div class="opcion" data-valor="Ama de casa"><span class="check"></span><span>Ama de casa...</span></div>
+        </div>
+        <input type="hidden" name="perfil" id="perfilValue">
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguiente()" disabled id="btn9">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 10 -->
+    <div class="pantalla" data-paso="10">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="pregunta">¿Te gustaría recibir publicidad de OXXO?</p>
+        <div class="opciones" data-grupo="publicidad">
+          <div class="opcion" data-valor="Si"><span class="check"></span><span>Sí</span></div>
+          <div class="opcion" data-valor="No"><span class="check"></span><span>No</span></div>
+        </div>
+        <input type="hidden" name="publicidad" id="publicidadValue">
+        <div class="aviso-privacidad">Consulta nuestro <a href="https://www.oxxo.com/aviso-de-privacidad-integral" target="_blank">Aviso de Privacidad</a>.</div>
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="siguienteCondicional()" disabled id="btn10">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 11 -->
+    <div class="pantalla" data-paso="11">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="pregunta">Comparte tus datos:</p>
+        <div class="input-grupo"><label>Nombre:</label><input type="text" name="nombre" id="nombreInput"></div>
+        <div class="input-grupo"><label>Correo:</label><input type="email" name="correo" id="correoInput"></div>
+        <div class="input-grupo"><label>Teléfono:</label><input type="tel" name="telefono" id="telefonoInput" maxlength="10"></div>
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="button" class="btn btn-primario" onclick="validarYSiguiente()">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 12 -->
+    <div class="pantalla" data-paso="12">
+      <div class="marca-header"><img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Oxxo_Logo.svg" alt="OXXO" class="marca-logo-img"></div>
+      <div style="padding: 24px 20px;">
+        <p class="pregunta">¿Ya formas parte de <strong>Spin Premia</strong>?</p>
+        <div class="opciones" data-grupo="spin">
+          <div class="opcion" data-valor="Si"><span class="check"></span><span>Sí</span></div>
+          <div class="opcion" data-valor="No"><span class="check"></span><span>No</span></div>
+        </div>
+        <input type="hidden" name="spin_premia" id="spinValue">
+        <div class="botones">
+          <button type="button" class="btn btn-secundario" onclick="anterior()">← Atrás</button>
+          <button type="submit" class="btn btn-primario" disabled id="btnFinal">Terminar Encuesta →</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="footer">Encuesta de satisfacción · Tienda Forum Río Nilo<br><a href="#">Support</a> · <a href="#">Privacy</a></div>
+</div>
+
+<script>
+  let pasoActual = 1;
+  let historialPasos = [1];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('distrito').value = params.get('distrito') || 'sin_asignar';
+    document.getElementById('folio').value = 'F' + Date.now().toString(36).toUpperCase();
+    document.getElementById('fechaHora').value = new Date().toLocaleString('es-MX');
+
+    construirNPS();
+    construirEscalasMini();
+    inicializarSelectores();
+    actualizarProgreso();
+  });
+
+  function construirNPS() {
+    const grid = document.getElementById('npsGrid');
+    for (let i = 0; i <= 10; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'nps-btn'; btn.textContent = i;
+      btn.onclick = () => {
+        document.querySelectorAll('#npsGrid .nps-btn').forEach(b => b.classList.remove('seleccionado'));
+        btn.classList.add('seleccionado');
+        document.getElementById('npsValue').value = i;
+        document.getElementById('btnComenzar').disabled = false;
+      };
+      grid.appendChild(btn);
+    }
+  }
+
+  function construirEscalasMini() {
+    document.querySelectorAll('.scale-mini').forEach(grid => {
+      const name = grid.dataset.name;
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden'; hidden.name = name; hidden.id = 'hidden_' + name;
+      grid.parentNode.appendChild(hidden);
+      for (let i = 0; i <= 10; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'nps-btn'; btn.textContent = i;
+        btn.onclick = () => {
+          grid.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('seleccionado'));
+          btn.classList.add('seleccionado');
+          hidden.value = i;
+          verificarEscalas();
+        };
+        grid.appendChild(btn);
+      }
+    });
+  }
+
+  function verificarEscalas() {
+    let todasLlenas = true;
+    document.querySelectorAll('.pantalla[data-paso="6"] .bloque-aspecto').forEach(bloque => {
+      if (bloque.style.display !== 'none') {
+        bloque.querySelectorAll('.scale-mini').forEach(grid => {
+          if (!document.getElementById('hidden_' + grid.dataset.name).value) todasLlenas = false;
+        });
+      }
+    });
+    document.getElementById('btn6').disabled = !todasLlenas;
+  }
+
+  function inicializarSelectores() {
+    const grupos = ['razon', 'continuar', 'precios', 'perfil', 'publicidad', 'spin'];
+    const hiddens = ['razonValue', 'continuarValue', 'preciosValue', 'perfilValue', 'publicidadValue', 'spinValue'];
+    const btns = ['btn3', 'btn4', 'btn7', 'btn9', 'btn10', 'btnFinal'];
+
+    grupos.forEach((g, i) => {
+      document.querySelectorAll(`[data-grupo="${g}"] .opcion`).forEach(op => {
+        op.onclick = () => {
+          document.querySelectorAll(`[data-grupo="${g}"] .opcion`).forEach(x => x.classList.remove('seleccionada'));
+          op.classList.add('seleccionada');
+          document.getElementById(hiddens[i]).value = op.dataset.valor;
+          document.getElementById(btns[i]).disabled = false;
+        };
+      });
+    });
+
+    const aspectosOps = document.querySelectorAll('[data-grupo="aspectos"] .opcion');
+    aspectosOps.forEach(op => {
+      op.onclick = () => {
+        op.classList.toggle('seleccionada');
+        const sel = Array.from(aspectosOps).filter(x => x.classList.contains('seleccionada')).map(x => x.dataset.valor);
+        document.getElementById('aspectosValue').value = sel.join(',');
+        document.getElementById('btn5').disabled = sel.length < 2;
+        document.getElementById('avisoMin').style.display = (sel.length === 1) ? 'block' : 'none';
+      };
+    });
+  }
+
+  function siguiente() {
+    let nuevo = pasoActual + 1;
+    if (pasoActual === 5) {
+      const asp = document.getElementById('aspectosValue').value.split(',');
+      document.querySelectorAll('.bloque-aspecto').forEach(b => b.style.display = asp.includes(b.dataset.aspecto) ? 'block' : 'none');
+      verificarEscalas();
+    }
+    cambiarPaso(nuevo);
+  }
+
+  function siguienteCondicional() {
+    if (pasoActual === 4 && document.getElementById('continuarValue').value === 'No') { cambiarPaso(12); return; }
+    if (pasoActual === 7) { 
+      const p = document.getElementById('preciosValue').value;
+      cambiarPaso((p === 'Caros' || p === 'Muy caros') ? 8 : 9); return; 
+    }
+    if (pasoActual === 10) { cambiarPaso(document.getElementById('publicidadValue').value === 'No' ? 12 : 11); return; }
+    siguiente();
+  }
+
+  function validarYSiguiente() {
+    if (!document.getElementById('nombreInput').value || !document.getElementById('correoInput').value || !document.getElementById('telefonoInput').value) {
+      alert('Llena los campos obligatorios'); return;
+    }
+    cambiarPaso(12);
+  }
+
+  function anterior() {
+    if (historialPasos.length > 1) { historialPasos.pop(); mostrarPaso(historialPasos[historialPasos.length - 1]); }
+  }
+
+  function cambiarPaso(nuevo) { historialPasos.push(nuevo); mostrarPaso(nuevo); }
+
+  function mostrarPaso(nuevo) {
+    document.querySelector(`.pantalla[data-paso="${pasoActual}"]`).classList.remove('activa');
+    document.querySelector(`.pantalla[data-paso="${nuevo}"]`).classList.add('activa');
+    pasoActual = nuevo; actualizarProgreso(); window.scrollTo(0,0);
+  }
+
+  function actualizarProgreso() { document.getElementById('progressBar').style.width = (pasoActual / 12 * 100) + '%'; }
+</script>
+</body>
+</html>
